@@ -1,3 +1,4 @@
+use super::models::SpectatorEndpoint;
 use std::fmt;
 use std::str::FromStr;
 
@@ -9,7 +10,13 @@ pub enum Region {
 }
 
 impl Region {
-    pub fn platform_id(&self) -> String {
+    pub fn to_endpoint(&self) -> SpectatorEndpoint {
+        SpectatorEndpoint {
+            base_url: base_url(self),
+            platform_id: self.platform_id(),
+        }
+    }
+    fn platform_id(&self) -> String {
         self.to_string().to_uppercase()
     }
 }
@@ -39,7 +46,7 @@ impl fmt::Display for Region {
     }
 }
 
-pub fn base_url(region: &Region) -> String {
+fn base_url(region: &Region) -> String {
     format!("http://spectator-consumer.{}.lol.pvp.net:80", region)
 }
 
@@ -94,5 +101,29 @@ mod tests {
         assert_eq!(Region::KR.platform_id(), "KR");
         assert_eq!(Region::EUW1.platform_id(), "EUW1");
         assert_eq!(Region::NA1.platform_id(), "NA1");
+    }
+
+    #[test]
+    fn test_to_endpoint() {
+        let kr_endpoint = Region::KR.to_endpoint();
+        assert_eq!(
+            kr_endpoint.base_url,
+            "http://spectator-consumer.kr.lol.pvp.net:80"
+        );
+        assert_eq!(kr_endpoint.platform_id, "KR");
+
+        let euw1_endpoint = Region::EUW1.to_endpoint();
+        assert_eq!(
+            euw1_endpoint.base_url,
+            "http://spectator-consumer.euw1.lol.pvp.net:80"
+        );
+        assert_eq!(euw1_endpoint.platform_id, "EUW1");
+
+        let na1_endpoint = Region::NA1.to_endpoint();
+        assert_eq!(
+            na1_endpoint.base_url,
+            "http://spectator-consumer.na1.lol.pvp.net:80"
+        );
+        assert_eq!(na1_endpoint.platform_id, "NA1");
     }
 }
