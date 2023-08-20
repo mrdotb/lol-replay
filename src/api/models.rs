@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct SpectatorEndpoint {
     pub base_url: String,
     pub platform_id: String,

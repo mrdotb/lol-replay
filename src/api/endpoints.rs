@@ -7,7 +7,7 @@ pub async fn fetch_api_version(endpoint: &SpectatorEndpoint) -> Result<String, r
 
     debug!("Fetching API version from URL: {}", url);
 
-    let response: String = reqwest::get(&url).await?.text().await?;
+    let response: String = reqwest::get(&url).await?.error_for_status()?.text().await?;
 
     debug!("Received API version response: {}", response);
     Ok(response.to_string())
@@ -25,7 +25,7 @@ pub async fn fetch_game_meta_data(
     );
     debug!("Fetching API game meta data from URL: {}", url);
 
-    let response: GameMetaData = reqwest::get(&url).await?.json().await?;
+    let response: GameMetaData = reqwest::get(&url).await?.error_for_status()?.json().await?;
 
     debug!("Received API game meta data response: {}", response);
 
@@ -44,7 +44,7 @@ pub async fn fetch_last_chunk_info(
     );
     debug!("Fetching API last chunk info data from URL: {}", url);
 
-    let response: ChunkInfo = reqwest::get(&url).await?.json().await?;
+    let response: ChunkInfo = reqwest::get(&url).await?.error_for_status()?.json().await?;
 
     debug!("Received API last chunk info response: {}", response);
 
@@ -65,7 +65,7 @@ pub async fn fetch_game_data_chunk(
     );
     debug!("Fetching API game data chunk from URL: {}", url);
 
-    let response = reqwest::get(url).await?;
+    let response = reqwest::get(url).await?.error_for_status()?;
 
     debug!("Received API game data chunk");
 
@@ -87,7 +87,7 @@ pub async fn fetch_keyframe(
     );
     debug!("Fetching API keyframe from URL: {}", url);
 
-    let response = reqwest::get(url).await?;
+    let response = reqwest::get(url).await?.error_for_status()?;
 
     debug!("Received API keyframe");
 
