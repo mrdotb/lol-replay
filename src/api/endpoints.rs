@@ -2,7 +2,7 @@ use super::models::{ChunkInfo, GameMetaData, SpectatorEndpoint};
 use log::debug;
 use reqwest;
 
-pub async fn fetch_api_version(endpoint: SpectatorEndpoint) -> Result<String, reqwest::Error> {
+pub async fn fetch_api_version(endpoint: &SpectatorEndpoint) -> Result<String, reqwest::Error> {
     let url = format!("{}/observer-mode/rest/consumer/version", endpoint.base_url);
 
     debug!("Fetching API version from URL: {}", url);
@@ -14,11 +14,11 @@ pub async fn fetch_api_version(endpoint: SpectatorEndpoint) -> Result<String, re
 }
 
 pub async fn fetch_game_meta_data(
-    endpoint: SpectatorEndpoint,
+    endpoint: &SpectatorEndpoint,
     game_id: &str,
 ) -> Result<GameMetaData, reqwest::Error> {
     let url = format!(
-        "{base_url}/observer-mode/rest/consumer/getGameMetaData/{platform_id}/{game_id}/token",
+        "{base_url}/observer-mode/rest/consumer/getGameMetaData/{platform_id}/{game_id}/1/token",
         base_url = endpoint.base_url,
         platform_id = endpoint.platform_id,
         game_id = game_id
@@ -33,7 +33,7 @@ pub async fn fetch_game_meta_data(
 }
 
 pub async fn fetch_last_chunk_info(
-    endpoint: SpectatorEndpoint,
+    endpoint: &SpectatorEndpoint,
     game_id: &str,
 ) -> Result<ChunkInfo, reqwest::Error> {
     let url = format!(
@@ -46,15 +46,15 @@ pub async fn fetch_last_chunk_info(
 
     let response: ChunkInfo = reqwest::get(&url).await?.json().await?;
 
-    debug!("Received API last chunk info response: {:?}", response);
+    debug!("Received API last chunk info response: {}", response);
 
     Ok(response)
 }
 
 pub async fn fetch_game_data_chunk(
-    endpoint: SpectatorEndpoint,
+    endpoint: &SpectatorEndpoint,
     game_id: &str,
-    chunk_id: &str,
+    chunk_id: u32,
 ) -> Result<Vec<u8>, reqwest::Error> {
     let url = format!(
         "{base_url}/observer-mode/rest/consumer/getGameDataChunk/{platform_id}/{game_id}/{chunk_id}/token",
@@ -64,15 +64,19 @@ pub async fn fetch_game_data_chunk(
         chunk_id = chunk_id
     );
     debug!("Fetching API game data chunk from URL: {}", url);
+
     let response = reqwest::get(url).await?;
+
+    debug!("Received API game data chunk");
+
     let bytes = response.bytes().await?;
     Ok(bytes.to_vec())
 }
 
 pub async fn fetch_keyframe(
-    endpoint: SpectatorEndpoint,
+    endpoint: &SpectatorEndpoint,
     game_id: &str,
-    keyframe_id: &str,
+    keyframe_id: u32,
 ) -> Result<Vec<u8>, reqwest::Error> {
     let url = format!(
         "{base_url}/observer-mode/rest/consumer/getKeyFrame/{platform_id}/{game_id}/{keyframe_id}/token",
@@ -82,7 +86,11 @@ pub async fn fetch_keyframe(
         keyframe_id = keyframe_id
     );
     debug!("Fetching API keyframe from URL: {}", url);
+
     let response = reqwest::get(url).await?;
+
+    debug!("Received API keyframe");
+
     let bytes = response.bytes().await?;
     Ok(bytes.to_vec())
 }
@@ -112,7 +120,7 @@ mod tests {
             platform_id: "KR".to_string(),
         };
 
-        let version = fetch_api_version(endpoint).await.unwrap();
+        let version = fetch_api_version(&endpoint).await.unwrap();
         assert_eq!(version, "2.0.0");
     }
 
@@ -123,7 +131,7 @@ mod tests {
         let _m = server
             .mock(
                 "GET",
-                "/observer-mode/rest/consumer/getGameMetaData/KR/6654667050/token",
+                "/observer-mode/rest/consumer/getGameMetaData/KR/6654667050/1/token",
             )
             .with_status(200)
             .with_body(
@@ -136,7 +144,7 @@ mod tests {
             platform_id: "KR".to_string(),
         };
 
-        let result = fetch_game_meta_data(endpoint, "6654667050").await;
+        let result = fetch_game_meta_data(&endpoint, "6654667050").await;
 
         assert!(result.is_ok());
         let response = result.unwrap();
@@ -159,7 +167,7 @@ mod tests {
             platform_id: "KR".to_string(),
         };
 
-        let result = fetch_last_chunk_info(endpoint, "6654667050").await;
+        let result = fetch_last_chunk_info(&endpoint, "6654667050").await;
         assert!(result.is_ok());
 
         let chunk_info = result.unwrap();
@@ -187,7 +195,7 @@ mod tests {
             platform_id: "KR".to_string(),
         };
 
-        let result = fetch_game_data_chunk(endpoint, "6654667050", "1").await;
+        let result = fetch_game_data_chunk(&endpoint, "6654667050", 1).await;
         assert!(result.is_ok());
     }
 
@@ -211,7 +219,7 @@ mod tests {
             platform_id: "KR".to_string(),
         };
 
-        let result = fetch_keyframe(endpoint, "6654667050", "1").await;
+        let result = fetch_keyframe(&endpoint, "6654667050", 1).await;
         assert!(result.is_ok());
     }
 }
