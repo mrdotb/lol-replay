@@ -108,7 +108,7 @@ async fn fetch_and_store_game_data_chunk(
     chunk_id: u32,
 ) -> Result<(), reqwest::Error> {
     // Return if the chunk ID is already in the set
-    if record.game_data_chunks.contains(&chunk_id) {
+    if record.has_game_data_chunk(chunk_id) {
         return Ok(());
     }
 
@@ -121,7 +121,7 @@ async fn fetch_and_store_game_data_chunk(
             {
                 debug!("Error while storing chunk: {}", e);
             } else {
-                record.game_data_chunks.insert(chunk_id);
+                record.insert_game_data_chunk(chunk_id);
             }
         }
         Err(error) => {
@@ -137,7 +137,7 @@ async fn fetch_and_store_keyframe(
     keyframe_id: u32,
 ) -> Result<(), reqwest::Error> {
     // Return if the keyframe ID is already in the set
-    if record.keyframes.contains(&keyframe_id) {
+    if record.has_keyframe(keyframe_id) {
         return Ok(());
     }
 
@@ -147,7 +147,7 @@ async fn fetch_and_store_keyframe(
             if let Err(e) = record.storage.store_key_frame(keyframe_id, keyframe) {
                 debug!("Error while storing keyframe: {}", e);
             } else {
-                record.keyframes.insert(keyframe_id);
+                record.insert_keyframe(keyframe_id);
             }
         }
         Err(error) => {

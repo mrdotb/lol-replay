@@ -4,6 +4,7 @@ use super::storage::Storage;
 
 use serde::ser::SerializeStruct;
 use serde::{Deserialize, Serialize, Serializer};
+
 use std::collections::HashSet;
 use std::fmt;
 use std::fs;
@@ -38,6 +39,22 @@ impl Record {
             game_data_chunks: HashSet::new(),
             storage,
         }
+    }
+
+    pub fn has_game_data_chunk(&self, chunk_id: u32) -> bool {
+        self.game_data_chunks.contains(&chunk_id)
+    }
+
+    pub fn insert_game_data_chunk(&mut self, chunk_id: u32) {
+        self.game_data_chunks.insert(chunk_id);
+    }
+
+    pub fn has_keyframe(&self, chunk_id: u32) -> bool {
+        self.keyframes.contains(&chunk_id)
+    }
+
+    pub fn insert_keyframe(&mut self, chunk_id: u32) {
+        self.keyframes.insert(chunk_id);
     }
 
     pub fn save_to_file(&self) -> Result<(), io::Error> {
