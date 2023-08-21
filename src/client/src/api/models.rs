@@ -7,6 +7,15 @@ pub struct SpectatorEndpoint {
     pub platform_id: String,
 }
 
+impl SpectatorEndpoint {
+    pub fn new(base_url: String, platform_id: String) -> Self {
+        SpectatorEndpoint {
+            base_url,
+            platform_id,
+        }
+    }
+}
+
 impl fmt::Display for SpectatorEndpoint {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Base Url: {}\n", self.base_url)?;

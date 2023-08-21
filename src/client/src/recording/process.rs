@@ -42,12 +42,15 @@ async fn record_media_data(record: &mut Record) -> Result<(), reqwest::Error> {
                         chunk_info.key_frame_id,
                     )
                     .await?;
+
+                    current_chunk_id = chunk_info.chunk_id;
+                    current_keyframe_id = chunk_info.key_frame_id;
                 }
 
                 process_media_data(record, chunk_info.chunk_id, chunk_info.key_frame_id).await?;
 
                 if chunk_info.chunk_id == chunk_info.end_game_chunk_id {
-                    debug!("Received last chunk info");
+                    debug!("Received last chunk info save record on disk");
                     record.save_to_file().unwrap();
                     break;
                 }
