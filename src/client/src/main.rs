@@ -7,7 +7,6 @@ use recording::process;
 use recording::storage::DiskStorage;
 
 use clap::{Args, Parser};
-use env_logger::{Builder, Env};
 
 use std::path::PathBuf;
 

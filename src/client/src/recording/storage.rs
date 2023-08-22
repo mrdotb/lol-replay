@@ -3,7 +3,7 @@ use std::io;
 use std::io::ErrorKind;
 use std::path::PathBuf;
 
-pub trait Storage {
+pub trait Storage: Send + Sync {
     fn store_game_data_chunk(&self, chunk_id: u32, data: Vec<u8>) -> Result<(), io::Error>;
     fn store_key_frame(&self, frame_id: u32, data: Vec<u8>) -> Result<(), io::Error>;
 

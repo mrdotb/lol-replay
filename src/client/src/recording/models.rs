@@ -9,6 +9,7 @@ use std::collections::HashSet;
 use std::fmt;
 use std::fs;
 use std::io;
+use std::sync::Mutex;
 
 pub struct Record {
     pub version: String,
@@ -16,8 +17,8 @@ pub struct Record {
     pub game_id: String,
     pub encryption_key: String,
     pub metadata: Option<GameMetaData>,
-    pub keyframes: HashSet<u32>,
-    pub game_data_chunks: HashSet<u32>,
+    pub keyframes: Mutex<HashSet<u32>>,
+    pub game_data_chunks: Mutex<HashSet<u32>>,
     pub storage: Box<dyn Storage>,
 }
 
@@ -35,26 +36,26 @@ impl Record {
             game_id,
             encryption_key,
             metadata: None,
-            keyframes: HashSet::new(),
-            game_data_chunks: HashSet::new(),
+            keyframes: Mutex::new(HashSet::new()),
+            game_data_chunks: Mutex::new(HashSet::new()),
             storage,
         }
     }
 
     pub fn has_game_data_chunk(&self, chunk_id: u32) -> bool {
-        self.game_data_chunks.contains(&chunk_id)
+        self.game_data_chunks.lock().unwrap().contains(&chunk_id)
     }
 
-    pub fn insert_game_data_chunk(&mut self, chunk_id: u32) {
-        self.game_data_chunks.insert(chunk_id);
+    pub fn insert_game_data_chunk(&self, chunk_id: u32) {
+        self.game_data_chunks.lock().unwrap().insert(chunk_id);
     }
 
     pub fn has_keyframe(&self, chunk_id: u32) -> bool {
-        self.keyframes.contains(&chunk_id)
+        self.keyframes.lock().unwrap().contains(&chunk_id)
     }
 
-    pub fn insert_keyframe(&mut self, chunk_id: u32) {
-        self.keyframes.insert(chunk_id);
+    pub fn insert_keyframe(&self, chunk_id: u32) {
+        self.keyframes.lock().unwrap().insert(chunk_id);
     }
 
     pub fn save_to_file(&self) -> Result<(), io::Error> {
@@ -83,14 +84,26 @@ impl Serialize for Record {
 
         // Sorting keyframes in ascending order
         state.serialize_field("keyframes", &{
-            let mut sorted = self.keyframes.iter().cloned().collect::<Vec<_>>();
+            let mut sorted = self
+                .keyframes
+                .lock()
+                .unwrap()
+                .iter()
+                .cloned()
+                .collect::<Vec<_>>();
             sorted.sort();
             sorted
         })?;
 
         // Sorting game_data_chunks in ascending order
         state.serialize_field("game_data_chunks", &{
-            let mut sorted = self.game_data_chunks.iter().cloned().collect::<Vec<_>>();
+            let mut sorted = self
+                .game_data_chunks
+                .lock()
+                .unwrap()
+                .iter()
+                .cloned()
+                .collect::<Vec<_>>();
             sorted.sort();
             sorted
         })?;
