@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "src/client",
-    # "src/server",
-    # "src/gui",
+    "src/server",
+    "src/db",
     # "src/common"
 ]
